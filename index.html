@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClipForge — AI-Powered Video Editing</title>
+    <meta name="description" content="Yayınlarınızdan hemen paylaşıma hazır videolar. Twitch, YouTube veya manuel yüklemeden AI destekli klip üretimi." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #0D0D0F;
+        --surface: #161619;
+        --surface-el: #1E1E22;
+        --border: #2A2A2F;
+        --primary: #7C5CFF;
+        --primary-hover: #6B4FE0;
+        --accent: #00E5A0;
+        --text: #F5F5F7;
+        --text-sec: #A0A0A8;
+        --text-muted: #6B6B75;
+        --danger: #FF4D6A;
+        --warning: #FFB84D;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      /* Nav */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: rgba(13,13,15,0.8);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+      }
+      nav .container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 64px;
+      }
+      .logo {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 32px;
+        list-style: none;
+      }
+      .nav-links a {
+        color: var(--text-sec);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: color 0.15s;
+      }
+      .nav-links a:hover { color: var(--text); }
+      .nav-cta {
+        background: var(--primary);
+        color: #fff !important;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: background 0.15s, transform 0.15s;
+      }
+      .nav-cta:hover { background: var(--primary-hover); transform: scale(1.02); }
+
+      /* Hero */
+      .hero {
+        padding: 160px 0 100px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 800px;
+        height: 800px;
+        background: radial-gradient(circle, rgba(124,92,255,0.15) 0%, transparent 70%);
+        pointer-events: none;
+      }
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(124,92,255,0.15);
+        border: 1px solid rgba(124,92,255,0.3);
+        color: var(--primary);
+        padding: 6px 16px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 24px;
+      }
+      .hero-badge span { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+      @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+      .hero h1 {
+        font-size: clamp(40px, 7vw, 72px);
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 24px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .hero h1 .gradient {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .hero p {
+        font-size: 18px;
+        color: var(--text-sec);
+        max-width: 600px;
+        margin: 0 auto 40px;
+        line-height: 1.7;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 28px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.15s;
+        cursor: pointer;
+        border: none;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-primary:hover { background: var(--primary-hover); transform: scale(1.02); box-shadow: 0 0 30px rgba(124,92,255,0.4); }
+      .btn-secondary {
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .btn-secondary:hover { background: var(--surface-el); transform: scale(1.02); }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-sec);
+        border: 1px solid var(--border);
+      }
+      .btn-ghost:hover { color: var(--text); border-color: var(--text-sec); }
+
+      /* Trusted logos */
+      .trusted {
+        padding: 60px 0;
+        text-align: center;
+      }
+      .trusted p {
+        font-size: 13px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 32px;
+      }
+      .trusted-logos {
+        display: flex;
+        gap: 48px;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        opacity: 0.5;
+      }
+      .trusted-logos span {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-sec);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* Features */
+      .features {
+        padding: 100px 0;
+        background: var(--surface);
+      }
+      .section-label {
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 16px;
+      }
+      .section-title {
+        text-align: center;
+        font-size: clamp(28px, 4vw, 42px);
+        font-weight: 800;
+        margin-bottom: 16px;
+      }
+      .section-subtitle {
+        text-align: center;
+        color: var(--text-sec);
+        font-size: 16px;
+        max-width: 560px;
+        margin: 0 auto 64px;
+      }
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+      }
+      .feature-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px;
+        transition: border-color 0.2s, transform 0.2s;
+      }
+      .feature-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-4px);
+      }
+      .feature-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(124,92,255,0.15);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+      .feature-card h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .feature-card p {
+        font-size: 14px;
+        color: var(--text-sec);
+        line-height: 1.6;
+      }
+
+      /* How it works */
+      .how {
+        padding: 100px 0;
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 32px;
+        margin-top: 64px;
+      }
+      .step {
+        text-align: center;
+        position: relative;
+      }
+      .step-num {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 800;
+        margin: 0 auto 20px;
+      }
+      .step h3 {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .step p {
+        font-size: 14px;
+        color: var(--text-sec);
+        max-width: 280px;
+        margin: 0 auto;
+      }
+
+      /* Formats */
+      .formats {
+        padding: 100px 0;
+        background: var(--surface);
+      }
+      .formats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 48px;
+      }
+      .format-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      .format-card .icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+      }
+      .format-card .icon.tiktok { background: rgba(255,77,106,0.15); }
+      .format-card .icon.youtube { background: rgba(255,0,0,0.15); }
+      .format-card .icon.reels { background: rgba(255,127,80,0.15); }
+      .format-card .icon.twitter { background: rgba(29,161,242,0.15); }
+      .format-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+      .format-card p { font-size: 13px; color: var(--text-sec); }
+
+      /* CTA */
+      .cta {
+        padding: 120px 0;
+        text-align: center;
+        position: relative;
+      }
+      .cta::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(0,229,160,0.1) 0%, transparent 70%);
+        pointer-events: none;
+      }
+      .cta h2 {
+        font-size: clamp(28px, 5vw, 48px);
+        font-weight: 800;
+        margin-bottom: 16px;
+      }
+      .cta p {
+        color: var(--text-sec);
+        font-size: 16px;
+        margin-bottom: 40px;
+      }
+
+      /* Footer */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 48px 0;
+      }
+      footer .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      footer p {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .footer-links {
+        display: flex;
+        gap: 24px;
+        list-style: none;
+      }
+      .footer-links a {
+        font-size: 13px;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .footer-links a:hover { color: var(--text-sec); }
+
+      /* Stats bar */
+      .stats-bar {
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 40px 0;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 32px;
+        text-align: center;
+      }
+      .stat-value {
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--primary);
+        margin-bottom: 4px;
+      }
+      .stat-label {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      @media (max-width: 768px) {
+        .nav-links { display: none; }
+        .hero { padding: 120px 0 60px; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Nav -->
+    <nav>
+      <div class="container">
+        <a href="/" class="logo">
+          <div class="logo-icon">⚡</div>
+          ClipForge
+        </a>
+        <ul class="nav-links">
+          <li><a href="#features">Özellikler</a></li>
+          <li><a href="#formats">Formatlar</a></li>
+          <li><a href="#how">Nasıl Çalışır</a></li>
+          <li><a href="https://edit.mesutapps.online" class="nav-cta">Panele Git</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-badge">
+          <span></span> AI Destekli Video Edit
+        </div>
+        <h1>
+          Yayınlarınızdan Hemen<br />
+          <span class="gradient">Paylaşıma Hazır Videolar</span>
+        </h1>
+        <p>
+          Twitch yayınlarınızdan veya manuel yüklediğiniz videolardan yapay zeka destekli klip üretimi. 
+          TikTok, Instagram Reels, YouTube Shorts veya uzun YouTube videoları — dakikalar içinde.
+        </p>
+        <div class="hero-actions">
+          <a href="https://edit.mesutapps.online/register" class="btn btn-primary">
+            ✦ Ücretsiz Başla
+          </a>
+          <a href="#how" class="btn btn-secondary">
+            Nasıl Çalışır →
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trusted -->
+    <section class="trusted">
+      <div class="container">
+        <p>Desteklenen Platformlar</p>
+        <div class="trusted-logos">
+          <span>📺 Twitch</span>
+          <span>▶️ YouTube</span>
+          <span>🎵 TikTok</span>
+          <span>📸 Instagram</span>
+          <span>🐦 X / Twitter</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats-bar">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat">
+            <div class="stat-value">5dk</div>
+            <div class="stat-label">Ortalama üretim süresi</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">10+</div>
+            <div class="stat-label">Desteklenen format</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">AI</div>
+            <div class="stat-label">Gemini destekli analiz</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">%100</div>
+            <div class="stat-label">Cloud tabanlı, kurulum gerektirmez</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+      <div class="container">
+        <div class="section-label">Özellikler</div>
+        <h2 class="section-title">Video edit'i yeniden tanımlıyoruz</h2>
+        <p class="section-subtitle">Saatlerce uğraşmak yerine, yayın sonrası 5 dakikada profesyonel klip seti hazır.</p>
+        
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🧠</div>
+            <h3>AI Anlama Analizi</h3>
+            <p>Gemini ile videolarınızda "izleyicileri heyecanlandıran" anları otomatik tespit eder. Sizin onayınızla klip üretir.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📺</div>
+            <h3>Twitch Entegrasyonu</h3>
+            <p>Hesabınızı bağlayın, VOD'larınız ve klipleriniz otomatik görünsün. Tek tıkla import et.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">✂️</div>
+            <h3>Akıllı Kurgulama</h3>
+            <p>Önemli anlar timeline'da işaretli. Başlangıç/bitiş noktalarını elle düzenle, geçişler ekle.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📱</div>
+            <h3>Çoklu Format Export</h3>
+            <p>Tek video kaynağından aynı anda 9:16 (dikey), 16:9 (yatay) veya 1:1 kare export al.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <h3>Otomatik Alt Yazı</h3>
+            <p>Whisper ile videonun dilinde otomatik alt yazı üretir. Düzenle, stil ver, paylaş.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Anında Paylaşım</h3>
+            <p>Üretilen videolarınızı doğrudan X/Twitter'a atın. Ekran başında vakit kaybetmeyin.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="how" id="how">
+      <div class="container">
+        <div class="section-label">Nasıl Çalışır</div>
+        <h2 class="section-title">4 basit adımda hazır</h2>
+        <p class="section-subtitle">Karmaşık edit yazılımlarına gerek yok. ClipForge ile dakikalar içinde paylaşıma hazır videolar.</p>
+        
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <h3>Video Yükle veya Bağla</h3>
+            <p>Twitch hesabını bağla veya manuel mp4/mov yükle.Desteklenen: 10GB'a kadar dosyalar.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <h3>AI Analiz Et</h3>
+            <p>Gemini video üzerinde çalışır, "öne çıkan anları" işaretler. 30'ar saniyelik parçalar halinde tarar.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <h3>Klipleri Düzenle</h3>
+            <p>AI'nın bulduğu klipleri timeline'da gör, onayla/reddet, başlık ve açıklama ekle.</p>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <h3>Export Et, Paylaş</h3>
+            <p>Hedef platformu seç — TikTok, Reels, YouTube — render al ve hemen paylaş.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Formats -->
+    <section class="formats" id="formats">
+      <div class="container">
+        <div class="section-label">Export Formatları</div>
+        <h2 class="section-title">Her platform için optimize</h2>
+        <p class="section-subtitle">Aynı video kaynağından farklı platformlar için farklı formatlarda export al.</p>
+        
+        <div class="formats-grid">
+          <div class="format-card">
+            <div class="icon tiktok">🎵</div>
+            <div>
+              <h3>TikTok / Instagram Reels</h3>
+              <p>9:16 dikey, 1080x1920, 30/60fps, 3 dakikaya kadar. Otomatik alt yazı ile.</p>
+            </div>
+          </div>
+          <div class="format-card">
+            <div class="icon youtube">▶️</div>
+            <div>
+              <h3>YouTube Shorts</h3>
+              <p>9:16 dikey, 1080x1920, 60fps'ye kadar. Keşfet önerilerine uygun.</p>
+            </div>
+          </div>
+          <div class="format-card">
+            <div class="icon reels">📸</div>
+            <div>
+              <h3>YouTube Long</h3>
+              <p>16:9 yatay, 1920x1080, 8-20 dakika arası. Temiz, profesyonel kurgu.</p>
+            </div>
+          </div>
+          <div class="format-card">
+            <div class="icon twitter">🐦</div>
+            <div>
+              <h3>X / Twitter</h3>
+              <p>16:9 veya 1:1, 140 saniyeye kadar. Doğrudan paylaşım desteği.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+      <div class="container">
+        <h2>Dakikalar içinde ilk videonu üret</h2>
+        <p>Kayıt ol, Twitch hesabını bağla, ilk klipini üret. Ücretsiz başla, kredi kartı gerektirmez.</p>
+        <div class="hero-actions">
+          <a href="https://edit.mesutapps.online/register" class="btn btn-primary">
+            ✦ Ücretsiz Başla
+          </a>
+          <a href="https://edit.mesutapps.online" class="btn btn-ghost">
+            Panele Git →
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <p>© 2026 ClipForge. Tüm hakları saklıdır.</p>
+        <ul class="footer-links">
+          <li><a href="#">Gizlilik Politikası</a></li>
+          <li><a href="#">Kullanım Koşulları</a></li>
+          <li><a href="https://edit.mesutapps.online">Panel</a></li>
+        </ul>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "mesutapps-landing",
+  "version": "1.0.0",
+  "description": "ClipForge - AI Video Editing Landing Page",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}
